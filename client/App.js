@@ -10,9 +10,14 @@ import {
 
 import debounce from 'debounce'
 import 'draft-js/dist/Draft.css';
-
+import { Grid } from '@material-ui/core';
 const j = require('jsondiffpatch')
-
+const styles = {
+        column: {
+	  border: '5px solid red',
+          padding: 20
+        }
+} 
 class App extends React.Component {
   
   _isUnmounted = false
@@ -21,6 +26,10 @@ class App extends React.Component {
     super(props); 
     this.state = { editorState: EditorState.createEmpty() };
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
+    this.logState = () => {
+      const content = this.state.editorState.getCurrentContent();
+      console.log(convertToRaw(content));
+    }; 
   }
   
   // hijacks keyboard ctrls like cmd+b for bold etc
@@ -76,12 +85,30 @@ class App extends React.Component {
   render () {
     return (
       <div>
-	<button onClick={this._onBoldClick.bind(this)}>Bold</button>
-	<Editor 
-	  editorState={this.state.editorState}
-	  onChange={this.onChange}
-	  handleKeyCommand={this.handleKeyCommand}
+	<input
+	  onClick={this.logState}
+	  type="button"
+	  value="Log State"
 	/>
+	<button onClick={this._onBoldClick.bind(this)}>Bold</button>
+	<Grid container>
+	  <Grid xs={1} item style={styles.column}>
+	    <h1> col1 </h1>
+	  </Grid>
+	  <Grid xs={3} item style={styles.column}>
+	    <h1> col2 </h1>
+	  </Grid>
+	  <Grid xs={6} item style={styles.column}>
+	    <Editor 
+	      editorState={this.state.editorState}
+	      onChange={this.onChange}
+	      handleKeyCommand={this.handleKeyCommand}
+	    />
+	  </Grid>
+	  <Grid xs={2} item style={styles.column}>
+	    <h1> col2 </h1>
+	  </Grid>
+	</Grid>
       </div>
     )
   }
