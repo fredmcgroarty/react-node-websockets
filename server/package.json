@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "jsondiffpatch": "^0.4.1",
     "ws": "^7.3.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "jsondiffpatch": "^0.4.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

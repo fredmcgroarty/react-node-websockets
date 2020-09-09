@@ -1,9 +1,10 @@
-const j = require('jsondiffpatch')
+const jsondiffpatch = require('jsondiffpatch')
 const WebSocket = require('ws')
 const http = require('http')
 const PORT = process.env.PORT || 1234
 const server = http.createServer()
 const wss = new WebSocket.Server({ server })
+
 const createStore = () => {
   let initialState = {
     blocks: [{text: ''}],
@@ -15,38 +16,76 @@ const createStore = () => {
     initialState,
     getState: () => state,
     patch: (diff) => {
-      state = j.patch(state, diff)
+      state = jsondiffpatch.patch(state, diff)
     }
-  } 
+  }
 }
+
+class Room {
+  constructor(id) {
+    this.id = id
+    this.users = {}
+
+  }
+  addUser(user) {
+    this.users[user.socket.id] = user
+  }
+
+  broadcast(message, senderId) {
+    Object.keys(this.users).forEach((userId) => {
+      if (userId != senderId) {
+	this.users[userId].sendMessage(message)
+      }
+    })
+  }
+}
+
+class User {
+  constructor(ws) {
+    this.name = null;
+    this.socket = ws;
+  }
+
+  id() {
+    this.socket.id
+  }
+
+  sendMessage(message) {
+    this.socket.send(
+      JSON.stringify({type: 'editUpdate', data: message})
+    )
+  }
+
+  setName(name)  {
+    this.name = name;
+  }
+}
+
+
+const room = new Room('1')
 const store = createStore()
+let usersCount = 0
 wss.on('connection', function connection (ws, req) {
-  const token = req.headers.cookie && req.headers.cookie.split('=')[1]
-  // When a new user connects, we need to get the delta between the server's current state
-  // and the empty, initialState and emit that. The client can then patch
-  // its own state when the window loads.
-  const delta = j.diff(store.initialState, store.getState())
-  ws.send(JSON.stringify({ delta })) 
-  
-  // each client will broadcast its state at a regular interval if there are changes.
-  ws.on('message', function incoming (data) {
-    let { raw } = JSON.parse(data) 
-    // 1. Get the delta between the server's current state and the client-emitted state
-    // note that delta will be null if there's no change.
-    let delta = j.diff(store.getState(), raw)
-    if (delta) {
-      // 2. We need to patch the server state so that it doesn't become stale
-      store.patch(delta)
-      // 3. Emit the delta to all of the clients.
-      wss.clients.forEach(function each (client) {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-	  console.log(client)
-          client.send(JSON.stringify({ delta }))
-        }
-      })
+
+  ws.id = usersCount++
+  let user = new User(ws)
+  room.addUser(user);
+  let delta = jsondiffpatch.diff(store.getState())
+
+  ws.on('message', function incoming (message) {
+    const payload = JSON.parse(message)
+    if (payload.type == 'setName') {
+      room.users[ws.id].setName(payload.data)
+    } else if (payload.type == 'editUpdate') {
+      let delta = jsondiffpatch.diff(store.getState(), payload)
+      if (delta) {
+	store.patch(delta);
+	room.broadcast(delta, ws.id)
+      }
     }
   })
 })
+
 server.listen(PORT, () => {
   console.log(`listening on http://localhost:${PORT}`)
 })
