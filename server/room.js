@@ -17,10 +17,10 @@ class Room {
     this.users[ws.id] = new User(ws)
   }
 
-  broadcast(sender, message) {
+  broadcast(sender, message, type) {
     Object.keys(this.users).forEach((userId) => {
       if (userId != sender.id) {
-	this.users[userId].sendMessage(message)
+	this.users[userId].sendMessage(message, type)
       }
     })
   }
@@ -32,7 +32,7 @@ class Room {
 
     if (delta) {
       this.store.patch(delta);
-      this.broadcast(sender, delta)
+      this.broadcast(sender, delta, 'editorNew')
     }
   }
 }

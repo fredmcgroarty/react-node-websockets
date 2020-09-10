@@ -25,7 +25,10 @@ class LiveEditor extends React.Component {
 
   constructor(props) { 
     super(props); 
-    this.state = { editorState: EditorState.createEmpty() };
+    this.state = {
+      activeUsers: [],
+      editorState: EditorState.createEmpty() 
+    };
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
     this.logState = () => {
       const content = this.state.editorState.getCurrentContent();
@@ -48,7 +51,7 @@ class LiveEditor extends React.Component {
     this.ws.onopen = (e) => {
       this.ws.send(
 	JSON.stringify({ 
-          type: 'setName', data: this.props.username
+          type: 'userSet', data: this.props.username
       })
     )}
     this.ws.onmessage = (event) => {
@@ -63,20 +66,27 @@ class LiveEditor extends React.Component {
     this._isUnmounted = true
   }
   
-  handleMessage = ({ data }) => {
-    if (!data) return
-    let raw = convertToRaw(this.state.editorState.getCurrentContent())
-    let diff = j.patch(raw, data.data)
-    let nextContentState = convertFromRaw(diff)
-    this.setState({
-      editorState: EditorState.push(this.state.editorState, nextContentState)
-    })
+  handleMessage = ({ type, data }) => {
+    if (!data || !type) return
+    switch(type) { 
+    case 'userNew': 
+      this.setState(prevState => ({
+	activeUsers: [...prevState.activeUsers, data]
+      }))
+    case 'editorNew':
+      let raw = convertToRaw(this.state.editorState.getCurrentContent())
+      let diff = j.patch(raw, data.data)
+      let nextContentState = convertFromRaw(diff)
+      this.setState({
+	editorState: EditorState.push(this.state.editorState, nextContentState)
+      })
+    }
   }
  
   broadcast = debounce((editorState) => {
     if (!this.ws) return
     this.ws.send(JSON.stringify({ 
-      type: 'editUpdate',
+      type: 'editorUpdate',
       data: convertToRaw(editorState.getCurrentContent())
     }))
   }, 300)

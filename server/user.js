@@ -8,9 +8,9 @@ class User {
     this.socket.id
   }
 
-  sendMessage(message) {
+  sendMessage(message, type) {
     this.socket.send(
-      JSON.stringify({type: 'editUpdate', data: message})
+      JSON.stringify({type: type, data: message})
     )
   }
 

@@ -15,10 +15,11 @@ room.socket.on('connection', function connection (ws, req) {
     const payload = JSON.parse(msg)
 
     switch(payload.type) {
-      case 'setName':
+      case 'userSet':
 	sender.setName(payload.data)
+	room.broadcast(sender, payload.data, 'userNew')
     	break;
-      case 'editUpdate':
+      case 'editorUpdate':
         room.broadcastDiff(sender, payload);
         break;
       default:
