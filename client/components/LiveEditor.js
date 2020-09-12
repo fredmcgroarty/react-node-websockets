@@ -1,10 +1,10 @@
 import React from 'react'
-import { 
-  Editor, 
-  EditorState, 
+import {
+  Editor,
+  EditorState,
   RichUtils,
   convertFromRaw,
-  convertToRaw, 
+  convertToRaw,
 } from 'draft-js'
 import debounce from 'debounce'
 import 'draft-js/dist/Draft.css';
@@ -12,6 +12,7 @@ import { Grid } from '@material-ui/core';
 
 const j = require('jsondiffpatch')
 
+var socket = require('socket.io-client')('ws://localhost:1234');
 const styles = {
   column: {
     border: '5px solid red',
@@ -20,22 +21,22 @@ const styles = {
 }
 
 class LiveEditor extends React.Component {
-  
+
   _isUnmounted = false
 
-  constructor(props) { 
-    super(props); 
+  constructor(props) {
+    super(props);
     this.state = {
       activeUsers: [],
-      editorState: EditorState.createEmpty() 
+      editorState: EditorState.createEmpty()
     };
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
     this.logState = () => {
       const content = this.state.editorState.getCurrentContent();
       console.log(convertToRaw(content));
-    }; 
+    };
   }
-  
+
   // hijacks keyboard ctrls like cmd+b for bold etc
   handleKeyCommand(command, editorState) {
     const newState = RichUtils.handleKeyCommand(editorState, command);
@@ -44,53 +45,60 @@ class LiveEditor extends React.Component {
       return;
     }
     return 'not-handled';
-  } 
-    
+  }
+
   componentDidMount () {
-    this.ws = new window.WebSocket("ws://localhost:1234")
-    this.ws.onopen = (e) => {
-      this.ws.send(
-	JSON.stringify({ 
-          type: 'userSet', data: this.props.username
-      })
-    )}
-    this.ws.onmessage = (event) => {
-      if (this._isUnmounted) return
-      this.handleMessage(JSON.parse(event.data))
-     }
+    this.ws = socket
+    this.ws.on('connect', this.onConnect())
+    this.ws.on('editorNew', this.handleEditorChanges)
+    this.ws.on('userNew', data => {
+      this.handleNewUser(data)
+    })
    }
-    
+
+  onConnect() {
+    this.ws.emit('userSet', this.props.username)
+  }
+
   componentWillUnmount () {
     this.ws.close()
     delete this.ws
     this._isUnmounted = true
   }
-  
-  handleMessage = ({ type, data }) => {
-    if (!data || !type) return
-    switch(type) { 
-    case 'userNew': 
-      this.setState(prevState => ({
-	activeUsers: [...prevState.activeUsers, data]
-      }))
-    case 'editorNew':
-      let raw = convertToRaw(this.state.editorState.getCurrentContent())
-      let diff = j.patch(raw, data.data)
-      let nextContentState = convertFromRaw(diff)
-      this.setState({
-	editorState: EditorState.push(this.state.editorState, nextContentState)
-      })
-    }
+
+  handleEditorChanges = (data) => {
+    if (!data) return
+    let raw = convertToRaw(this.state.editorState.getCurrentContent())
+    let diff = j.patch(raw, data)
+    let nextContentState = convertFromRaw(diff)
+    this.setState({
+      editorState: EditorState.push(this.state.editorState, nextContentState)
+    })
+   }
+
+  handleRemoveUser = (data) => {
+    this.setState(
+      {	activeUsers: this.state.activeUsers.filter(
+	  function(data) {
+	    return data !== e.target.value
+	  }
+      )}
+    );
   }
- 
+
+   handleNewUser = (data) => {
+     this.setState(prevState => ({
+       activeUsers: data
+     }))
+   }
+
   broadcast = debounce((editorState) => {
     if (!this.ws) return
-    this.ws.send(JSON.stringify({ 
-      type: 'editorUpdate',
-      data: convertToRaw(editorState.getCurrentContent())
-    }))
+    this.ws.emit(
+      'editorUpdate', convertToRaw(editorState.getCurrentContent())
+    )
   }, 300)
- 
+
   onChange = editorState => {
     this.broadcast(editorState)
     this.setState({ editorState })
@@ -103,6 +111,9 @@ class LiveEditor extends React.Component {
   render () {
     return (
       <div>
+	<h2>
+	  { this.state.activeUsers }
+	</h2>
 	<input
 	  onClick={this.logState}
 	  type="button"
@@ -117,7 +128,7 @@ class LiveEditor extends React.Component {
 	    <h1> col2 </h1>
 	  </Grid>
 	  <Grid xs={6} item style={styles.column}>
-	    <Editor 
+	    <Editor
 	      editorState={this.state.editorState}
 	      onChange={this.onChange}
 	      handleKeyCommand={this.handleKeyCommand}

@@ -7,8 +7,11 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js'
   },
-  devServer: { 
+  devServer: {
     contentBase: './dist',
+    host: '0.0.0.0',
+    port: 3000,
+    disableHostCheck: true
   },
   plugins : [
       new HtmlWebpackPlugin ({

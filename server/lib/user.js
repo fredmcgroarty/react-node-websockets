@@ -4,16 +4,6 @@ class User {
     this.socket = ws;
   }
 
-  id() {
-    this.socket.id
-  }
-
-  sendMessage(message, type) {
-    this.socket.send(
-      JSON.stringify({type: type, data: message})
-    )
-  }
-
   setName(name)  {
     this.name = name;
   }
