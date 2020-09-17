@@ -2,12 +2,17 @@ const jsondiffpatch = require('jsondiffpatch')
 
 const createEditorStore = () => {
   let initialState = {
-    blocks: [{text: ''}],
+    blocks: [],
     entityMap: {}
   }
   let state = { ...initialState }
  return {
     initialState,
+    isEmpty: () => {
+      var hasBlocks = state.blocks.length > 0
+      var hasEntityMaps = Object.keys(state.entityMap).length > 0
+      return !hasBlocks && !hasEntityMaps
+    },
     getState: () => state,
     patch: (diff) => {
       state = jsondiffpatch.patch(state, diff)
