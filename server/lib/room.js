@@ -10,6 +10,10 @@ class Room {
     this.userStore = Store.createUserStore()
   }
 
+  anyEditorActivity() {
+    return !this.editorStore.isEmpty()
+  }
+
   getEditorState() {
     return this.editorStore.getState()
   }

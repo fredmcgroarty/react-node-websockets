@@ -39,9 +39,7 @@ describe('createEditorStore', function() {
       store.patch(delta)
       expect(store.isEmpty()).to.be.false
     });
-
   });
-
 
   describe('#patch(diff)', function() {
     it('updates the state of the store', function() {

@@ -10,16 +10,19 @@ function runSocketServer(server) {
     socket.on('disconnect', data => { room.removeUser(socket) })
     socket.on('editorUpdate', data => {
       var delta = diffPatch.diff(
-	room.getEditorState(), data
+        room.getEditorState(), data
       )
       if (delta) {
-	room.patchEditorState(delta);
-	socket.broadcast.emit('editorNew', delta)
+        room.patchEditorState(delta);
+        socket.broadcast.emit('editorNew', delta)
       }
     });
     socket.on('userSet', (data) => {
       room.setUser(data, socket)
       io.emit('userNew', room.getUsernames())
+      if (room.anyEditorActivity()) {
+        socket.emit('editorInit', room.getEditorState())
+      }
     });
   })
 }
