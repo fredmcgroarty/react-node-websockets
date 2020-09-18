@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  Editor,
-  EditorState,
-  RichUtils,
-  compositeDecorator,
-  convertFromRaw,
-  convertToRaw,
-} from 'draft-js'
+import { convertToRaw, Editor, RichUtils } from 'draft-js'
 import 'draft-js/dist/Draft.css';
 import { Grid } from '@material-ui/core';
 import { SocketContext } from './SocketManager';
@@ -22,17 +15,8 @@ class LiveEditor extends React.Component {
 
   static contextType = SocketContext;
 
-  constructor(props) {
-    super(props);
-    this.handleKeyCommand = this.handleKeyCommand.bind(this);
-    this.logState = () => {
-      const content = this.context.editorState.getCurrentContent();
-      console.log(convertToRaw(content));
-    };
-  }
-
   // hijacks keyboard ctrls like cmd+b for bold etc
-  handleKeyCommand(command, editorState) {
+  handleKeyCommand = (command, editorState) => {
     const newState = RichUtils.handleKeyCommand(this.context.editorState, command);
     if (newState) {
       this.onChange(newState);
@@ -41,8 +25,10 @@ class LiveEditor extends React.Component {
     return 'not-handled';
   }
 
-  _onBoldClick() {
-    this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, 'BOLD'));
+  onBoldClick = () => {
+    this.onChange(RichUtils.toggleInlineStyle(
+      this.context.editorState, 'BOLD'
+    ));
   }
 
   onChange = editorState => {
@@ -52,15 +38,7 @@ class LiveEditor extends React.Component {
   render () {
     return (
       <div>
-        <h2>
-          { this.context.activeUsers }
-        </h2>
-        <input
-          onClick={this.logState}
-          type="button"
-          value="Log State"
-        />
-        <button onClick={this._onBoldClick.bind(this)}>Bold</button>
+        <button onClick={this.onBoldClick.bind(this)}>Bold</button>
         <Grid container>
           <Grid xs={1} item style={styles.column}>
             <h1> col1 </h1>

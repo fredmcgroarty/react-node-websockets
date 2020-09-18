@@ -1,5 +1,5 @@
 import React from 'react'
-import LiveEditor from './LiveEditor'
+import Workspace from './Workspace'
 import SignIn from './SignIn'
 import SocketManager from './SocketManager'
 
@@ -23,7 +23,7 @@ class App extends React.Component {
     if (null != this.state.username) {
       view = (
         <SocketManager username={this.state.username}>
-          <LiveEditor />
+          <Workspace />
         </ SocketManager>
       )
     } else {
