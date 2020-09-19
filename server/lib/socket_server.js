@@ -20,9 +20,7 @@ function runSocketServer(server) {
     socket.on('userSet', (data) => {
       room.setUser(data, socket)
       io.emit('userNew', room.getUsernames())
-      if (room.anyEditorActivity()) {
-        socket.emit('editorInit', room.getEditorState())
-      }
+      socket.emit('editorInit', room.getEditorState())
     });
   })
 }

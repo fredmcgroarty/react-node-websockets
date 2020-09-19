@@ -2,18 +2,19 @@ import React from "react";
 import debounce from 'debounce'
 import io from 'socket.io-client';
 import {
-  convertFromRaw,
-  convertToRaw,
-  EditorState,
+  convertFromRaw, convertToRaw, EditorState,
 } from 'draft-js'
+
 var socket = require('socket.io-client')('ws://localhost:1234');
 const diffPatch = require('jsondiffpatch')
 
 export const SocketContext = React.createContext({
   activeUsers: [],
   broadcast: () => {},
+  updateStateAndBroadcast: () => {},
   editorState: EditorState.createEmpty(),
 });
+
 
 export class SocketManager extends React.Component {
 
@@ -33,7 +34,8 @@ export class SocketManager extends React.Component {
     this.socket = socket
 
     this.socket.on('connect',
-      this.socket.emit('userSet', this.props.username)
+      this.socket.emit('userSet', this.props.username),
+      this.socket.on('editorInit', this.initEditor)
     )
     this.socket.on('editorInit', this.initEditor)
     this.socket.on('editorNew', this.handleEditorChanges)
@@ -49,6 +51,7 @@ export class SocketManager extends React.Component {
   }
 
   initEditor = data => {
+    console.log('data', data)
     var convertedState = convertFromRaw(data)
     this.setState({
       editorState: EditorState.createWithContent(convertedState)
@@ -73,14 +76,19 @@ export class SocketManager extends React.Component {
 
   broadcast = debounce((editorState) => {
     this.socket.emit(
-      'editorUpdate', convertToRaw(this.state.editorState.getCurrentContent())
+      'editorUpdate', convertToRaw(
+        this.state.editorState.getCurrentContent()
+      )
     )
   }, 300)
 
   render () {
     return (
       <SocketContext.Provider value={{
-        broadcast: (editorState) => {
+        updateState: (editorState) => {
+          this.setState({ editorState: editorState });
+        },
+        updateStateAndBroadcast: (editorState) => {
           this.setState({ editorState: editorState });
           this.broadcast(editorState)
         },
