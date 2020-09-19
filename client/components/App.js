@@ -1,10 +1,9 @@
 import React from 'react'
-import Workspace from './Workspace'
+import Workspace from './workspace/index'
 import SignIn from './SignIn'
-import SocketManager from './SocketManager'
+import SocketManager from './contexts/SocketManager'
 
 class App extends React.Component {
-
   state = {
     username: null
   };
