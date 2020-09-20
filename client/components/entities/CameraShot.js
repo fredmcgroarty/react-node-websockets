@@ -4,8 +4,9 @@ import { Link } from "react-router-dom";
 const CameraShot = (props) => {
   const entity = props.contentState.getEntity(props.block.getEntityAt(0));
   const data = entity.getData();
+  console.log('data', )
   return(
-    <Link to={ '/entity/' + props.block.getEntityAt(0) } >
+    <Link to={ '/entity/' + entity.getType() + '/' + props.block.getEntityAt(0) } >
       <h2>{data.title}</h2>
       {props.children}
     </Link>

@@ -17,20 +17,28 @@ class Workspace extends React.Component {
 
   buttonRow() {
     return(
-      <Link to='/entity/new/CAMERA_SHOT' >
-        <Button variant='primary'>
-          Open
-        </Button>
-      </Link>
+      <div>
+        <Link to='/entity/new/CAMERA_SHOT' >
+          <Button variant="outlined" color="primary" >
+            Camera Shot
+          </Button>
+        </Link>
+        <Link to='/entity/new/VT_INSERT' >
+          <Button variant="outlined" color="primary" >
+            Vit Insert
+          </Button>
+        </Link>
+      </div>
     )
   }
 
   render() {
     return (
       <div>
-        <input onClick={this.logState}
-               type="button"
-               value="Log State"
+        <input
+          onClick={this.logState}
+          type="button"
+          value="Log State"
         />
         <h2>
           { this.context.activeUsers }
@@ -38,7 +46,7 @@ class Workspace extends React.Component {
         { this.buttonRow() }
         <Switch>
           <Route path='/entity/new/:type' component={EntityDrawer} />
-          <Route path='/entity/:id' component={EntityDrawer} />
+          <Route path='/entity/:type/:id' component={EntityDrawer} />
           <Route path='/' />
         </Switch>
         <LiveEditor/>

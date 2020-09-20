@@ -1,9 +1,11 @@
 import React from 'react'
-import { convertToRaw, Editor, RichUtils } from 'draft-js'
 import 'draft-js/dist/Draft.css';
+import { convertToRaw, Editor, RichUtils } from 'draft-js'
 import { Grid } from '@material-ui/core';
+
 import { SocketContext } from './../contexts/SocketManager';
 import { cameraShotRenderer, CameraShot } from './../entities/CameraShot'
+
 const styles = {
   column: {
     border: '5px solid red',

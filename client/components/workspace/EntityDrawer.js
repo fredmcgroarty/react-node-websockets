@@ -6,7 +6,7 @@ import EntityForm from './EntityForm'
 const EntityDrawer = ({ match }) => (
   <Drawer open={true} >
     <Link to='/'>
-      <Button>
+      <Button variant="outlined" color="secondary" href="#outlined-buttons">
         Close
       </Button>
     </Link>
