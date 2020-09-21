@@ -1,0 +1,21 @@
+---
+version: '3.5'
+
+services:
+  server:
+    build:
+      context: ./server
+    volumes:
+      - ./server:/server
+      - /server/node_modules
+    ports:
+      - 1234:1234
+  client:
+    build:
+      context: ./client
+    image: webpack
+    ports:
+      - 3000:3000
+    volumes:
+      - ./client:/client
+      - /client/node_modules
