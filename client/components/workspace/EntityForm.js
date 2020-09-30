@@ -5,19 +5,22 @@ import { AtomicBlockUtils, Modifier, EditorState } from 'draft-js'
 import { SocketContext } from './../contexts/SocketManager';
 import Form from "@rjsf/core";
 import PropTypes from 'prop-types';
-import CameraShotSchema from '../../schemas/camera_shot.schema'
 
-const entitySchema = { 'CAMERA_SHOT': CameraShotSchema }
-
-class EntityForm extends React.Component {
-
-  static contextType = SocketContext;
-
-  state = {
-    formData: {},
-    isFinished: false,
-    schema: {},
-    uiSchema: {
+const entitySchema = { 
+  'CAMERA_SHOT': { 
+    schemaUrl: 'camera_shot.json',
+    uiSchema: { 
+      description: {
+        "ui:widget": "textarea",
+        "ui:options": {
+          rows: 15
+        }
+      }
+    }
+  },
+  'VT_INSERT': { 
+    schemaUrl: 'vt_insert.json',
+    uiSchema: { 
       description: {
         "ui:widget": "textarea",
         "ui:options": {
@@ -26,10 +29,29 @@ class EntityForm extends React.Component {
       }
     }
   }
+}
+
+class EntityForm extends React.Component {
+
+  static contextType = SocketContext;
+
+
+  state = {
+    formData: {},
+    isFinished: false,
+    schema: {},
+    uiSchema: {}
+  }
 
   componentDidMount() {
-    console.log('entitySchema', entitySchema)
-    this.setState({ schema: entitySchema[this.props.entityType]})
+    var schema = entitySchema[this.props.entityType]
+    var schemaUrl = ("http://localhost:5000/" + schema['schemaUrl'])
+
+    this.setState({uiSchema: schema['uiSchema'] })
+
+    fetch(schemaUrl).then(response => response.json()).then(body => { 
+      this.setState({ schema: body })
+    })
 
     this.editorState = this.context.editorState
     this.contentState = this.editorState.getCurrentContent()

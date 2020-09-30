@@ -2,6 +2,19 @@
 version: '3.5'
 
 services:
+  schema:
+    tty: true 
+    command: 'bundle exec foreman start'
+    build:
+      context: ./schema
+    ports:
+      - 5000:5000
+    volumes:
+      - ./schema:/schema
+      - ./schema/.bundle:/schema/bundle
+    environment:
+      - RUBYOPT=-W0 -KU -E utf-8:utf-8
+
   server:
     build:
       context: ./server
@@ -14,6 +27,8 @@ services:
     build:
       context: ./client
     image: webpack
+    links:
+      - server
     ports:
       - 3000:3000
     volumes:

@@ -5,7 +5,7 @@ import {
   convertFromRaw, convertToRaw, EditorState,
 } from 'draft-js'
 
-var socket = require('socket.io-client')('ws://localhost:1234');
+var socket = require('socket.io-client')('ws://0.0.0.0:1234');
 const diffPatch = require('jsondiffpatch')
 
 export const SocketContext = React.createContext({
